@@ -1,4 +1,4 @@
-# Gradle Build Cache Server (Spring Boot + Docker)
+# Gradle Build Cache Server
 
 This project provides a self-hosted remote Gradle build cache using Spring Boot.
 
