@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.file.Files;
@@ -84,5 +85,44 @@ class BuildCacheControllerTest {
     void returnsNotFoundForUnknownKey() throws Exception {
         mockMvc.perform(get("/cache/{key}", "abcdefabcdefabcdefabcdefabcdefab"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void statsEndpointsExposeMetrics() throws Exception {
+        String key = "fedcba0987654321fedcba0987654321";
+        byte[] payload = "metrics-payload".getBytes();
+
+        mockMvc.perform(put("/cache/{key}", key)
+                        .header("X-Cache-Namespace", "team-alpha")
+                        .header("X-Cache-Project", "service-a")
+                        .content(payload))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/cache/{key}", key))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/cache/{key}", "00000000000000000000000000000000"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/stats/cache-trends"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hitCount").isNumber())
+                .andExpect(jsonPath("$.missCount").isNumber())
+                .andExpect(jsonPath("$.readBytes").isNumber())
+                .andExpect(jsonPath("$.writeBytes").isNumber())
+                .andExpect(jsonPath("$.hourly").isArray());
+
+        mockMvc.perform(get("/api/stats/keyspace"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.entryCount").isNumber())
+                .andExpect(jsonPath("$.totalSizeBytes").isNumber())
+                .andExpect(jsonPath("$.topNamespaces").isArray())
+                .andExpect(jsonPath("$.topProjects").isArray());
+
+        mockMvc.perform(get("/api/stats/performance"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestCount").isNumber())
+                .andExpect(jsonPath("$.latencyMs.GET").exists())
+                .andExpect(jsonPath("$.statusCodes").isMap());
     }
 }

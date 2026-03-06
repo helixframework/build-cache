@@ -10,6 +10,19 @@ It implements the HTTP endpoints needed by Gradle remote build cache:
 
 Cache objects are persisted on disk under `/data/cache` in the container.
 
+## Stats APIs
+
+The server exposes dashboard-ready JSON endpoints:
+
+- `GET /api/stats/cache-trends`: hit/miss trends, read/write volume, estimated bytes saved (hourly + overall)
+- `GET /api/stats/keyspace`: entry count, total size, oldest/newest artifacts, top namespaces/projects
+- `GET /api/stats/performance`: request rate, p50/p95/p99 latency for `GET`/`PUT`/`HEAD`, status code error data
+
+Optional request headers on `PUT /cache/{key}` for namespace/project attribution:
+
+- `X-Cache-Namespace`
+- `X-Cache-Project`
+
 ## Run with Docker Compose
 
 ```bash
