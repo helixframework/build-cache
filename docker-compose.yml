@@ -1,0 +1,11 @@
+services:
+  gradle-build-cache:
+    build: .
+    container_name: gradle-build-cache
+    ports:
+      - "5071:5071"
+    environment:
+      GRADLE_CACHE_STORAGE_DIR: /data/cache
+    volumes:
+      - ./cache-data:/data/cache
+    restart: unless-stopped

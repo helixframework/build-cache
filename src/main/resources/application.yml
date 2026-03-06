@@ -1,0 +1,6 @@
+server:
+  port: 5071
+
+gradle:
+  cache:
+    storage-dir: /data/cache
