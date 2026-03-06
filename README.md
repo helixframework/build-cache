@@ -70,6 +70,26 @@ Set environment variable to change cache storage path:
 
 The default server port is `5071`.
 
+## Troubleshooting TLS
+
+If you see this error during a Gradle build:
+
+`The remote build cache was disabled during the build due to errors.`
+
+and you are fronting this cache with Caddy/TLS, add your Caddy certificate (or issuing CA certificate) to the JVM truststore used by Gradle.
+
+Example:
+
+```bash
+keytool -importcert \
+  -alias caddy-local-ca \
+  -file /path/to/caddy-ca.crt \
+  -keystore "$JAVA_HOME/lib/security/cacerts" \
+  -storepass changeit
+```
+
+Then rerun your Gradle build.
+
 ## Security note
 
 This starter service has no authentication and is intended for trusted networks.
